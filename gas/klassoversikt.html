@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klassöversikt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f4f1ea;
+      --surface: #ffffff;
+      --ink:     #1c1f1d;
+      --mute:    #7a7a76;
+      --hair:    #ece8de;
+      --accent:  #3a6b54;
+      --warn:    #a86a3e;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 28px 20px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .header-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .header-meta { font-size: 11px; color: var(--mute); text-align: right; }
+
+    /* ── Stat cards ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .stat-card .label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 500;
+    }
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 500;
+      margin-top: 4px;
+      letter-spacing: -0.025em;
+      line-height: 1;
+    }
+    .stat-card .value.big { font-size: 36px; }
+    .stat-card .value .unit { font-size: 18px; color: var(--mute); margin-left: 1px; }
+    .stat-card .sub { font-size: 11px; color: var(--mute); margin-top: 6px; }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 400px;
+    }
+    thead tr { background: #fafaf6; }
+    th {
+      padding: 11px 6px;
+      font-weight: 500;
+      font-size: 10px;
+      color: var(--mute);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--hair);
+      white-space: nowrap;
+      user-select: none;
+    }
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { color: var(--ink); }
+    th.namn-col { text-align: left; padding-left: 14px; min-width: 140px; }
+    .sort-icon { font-style: normal; opacity: 0.5; margin-left: 3px; }
+
+    td {
+      padding: 10px 6px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      vertical-align: middle;
+    }
+    td.namn-col {
+      text-align: left;
+      padding-left: 14px;
+      font-size: 13px;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    td.totalt-col { padding: 10px 14px 10px 6px; font-size: 13px; }
+    tbody tr:not(:last-child) td { border-bottom: 1px solid var(--hair); }
+
+    td.lvl-none { color: #c9c5b8; }
+    td.lvl-red    { background: #ecd5c5; color: #7a3a26; }
+    td.lvl-yellow { background: #efe1c1; color: #6b5524; }
+    td.lvl-green  { background: #d4e2cc; color: #2c5a40; }
+    td.lvl-dark   { background: #b8cdb4; color: #1c4030; }
+    td.totalt-col.lvl-red,
+    td.totalt-col.lvl-yellow,
+    td.totalt-col.lvl-green,
+    td.totalt-col.lvl-dark { font-weight: 600; }
+
+    tfoot tr td {
+      border-top: 2px solid var(--hair);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 11px 6px;
+    }
+    tfoot tr td.namn-col {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 600;
+    }
+
+    /* ── Klickbart namn ── */
+    td.namn-col { cursor: pointer; }
+    td.namn-col:hover { text-decoration: underline; color: var(--accent); }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(28,31,29,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px 30px 24px;
+      width: min(680px, 94vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .modal-header h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: var(--mute); line-height: 1; padding: 0 0 0 12px;
+    }
+    .modal-close:hover { color: var(--ink); }
+    .modal-omrade { margin-bottom: 20px; }
+    .modal-omrade-rubrik {
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--mute); font-weight: 600; margin-bottom: 8px;
+    }
+    .modal-tests {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .modal-chip {
+      display: flex; flex-direction: column; align-items: center;
+      border-radius: 8px; padding: 8px 14px; min-width: 56px;
+      border: 1px solid var(--hair);
+    }
+    .modal-chip .chip-id  { font-size: 9px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.08em; }
+    .modal-chip .chip-val { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+    .modal-chip .chip-pct { font-size: 10px; color: var(--mute); }
+    .modal-chip.lvl-red    { background: #ecd5c5; border-color: #dfc4b2; }
+    .modal-chip.lvl-yellow { background: #efe1c1; border-color: #e2d1a8; }
+    .modal-chip.lvl-green  { background: #d4e2cc; border-color: #c0d4b6; }
+    .modal-chip.lvl-dark   { background: #b8cdb4; border-color: #a2bb9e; }
+    .modal-chip.lvl-red    .chip-val { color: #7a3a26; }
+    .modal-chip.lvl-yellow .chip-val { color: #6b5524; }
+    .modal-chip.lvl-green  .chip-val { color: #2c5a40; }
+    .modal-chip.lvl-dark   .chip-val { color: #1c4030; }
+    .modal-medel {
+      margin-top: 18px; padding-top: 14px;
+      border-top: 1px solid var(--hair);
+      display: flex; gap: 24px; flex-wrap: wrap;
+    }
+    .modal-medel-item .label { font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.08em; }
+    .modal-medel-item .val   { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      font-size: 10.5px;
+      color: var(--mute);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<?
+  var omraden   = klassData.omraden;
+  var studenter = klassData.studenter;
+  var klassStats = klassData.klassStats;
+  var klassTotal = klassData.klassTotal;
+
+  function cellKlass(p) {
+    if (p === null || p === undefined) return "lvl-none";
+    if (p < 50) return "lvl-red";
+    if (p < 75) return "lvl-yellow";
+    if (p < 90) return "lvl-green";
+    return "lvl-dark";
+  }
+
+  var starkast = null, svagast = null;
+  for (var o = 0; o < omraden.length; o++) {
+    var om = omraden[o];
+    var med = klassStats[om];
+    if (med === null) continue;
+    if (starkast === null || med > klassStats[starkast]) starkast = om;
+    if (svagast  === null || med < klassStats[svagast])  svagast  = om;
+  }
+?>
+
+<div class="header">
+  <div>
+    <div class="header-label">Historia · Klassöversikt</div>
+    <h1>Resultatöversikt</h1>
+  </div>
+  <div class="header-meta"><?= studenter.length ?> elever</div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Klassmedel</div>
+    <div class="value big" style="color:var(--accent)">
+      <?= klassTotal !== null ? klassTotal : '—' ?><span class="unit">%</span>
+    </div>
+    <div class="sub">Medel över alla områden</div>
+  </div>
+  <? if (starkast) { ?>
+  <div class="stat-card">
+    <div class="label">Starkast område</div>
+    <div class="value" style="color:var(--accent)"><?= klassStats[starkast] ?><span class="unit">%</span></div>
+    <div class="sub"><?= starkast ?></div>
+  </div>
+  <? } ?>
+  <? if (svagast) { ?>
+  <div class="stat-card">
+    <div class="label">Träna mer</div>
+    <div class="value" style="color:var(--warn)"><?= klassStats[svagast] ?><span class="unit">%</span></div>
+    <div class="sub"><?= svagast ?></div>
+  </div>
+  <? } ?>
+  <div class="stat-card">
+    <div class="label">Elever</div>
+    <div class="value" style="color:var(--ink)"><?= studenter.length ?></div>
+    <div class="sub">i klassen</div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table id="klass-table">
+    <thead>
+      <tr>
+        <th class="namn-col sortable" onclick="sortTable(0)">Elev <span class="sort-icon">↕</span></th>
+        <? for (var o = 0; o < omraden.length; o++) { ?>
+        <th class="sortable" onclick="sortTable(<?= o + 1 ?>)"><?= omraden[o] ?> <span class="sort-icon">↕</span></th>
+        <? } ?>
+        <th class="totalt-col sortable" onclick="sortTable(<?= omraden.length + 1 ?>)">Totalt <span class="sort-icon">↕</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <? for (var s = 0; s < studenter.length; s++) {
+        var elev = studenter[s];
+      ?>
+      <tr>
+        <td class="namn-col" onclick="visaElev(<?= s ?>)"><?= elev.namn ?></td>
+        <? for (var o = 0; o < omraden.length; o++) {
+          var p        = elev.omradeMedel[omraden[o]];
+          var cellKls  = cellKlass(p);
+          var cellText = (p !== null && p !== undefined) ? p : '·';
+        ?>
+        <td class="<?= cellKls ?>"><?= cellText ?></td>
+        <? } ?>
+        <? var tfKls  = cellKlass(elev.totalt);
+           var tfText = (elev.totalt !== null && elev.totalt !== undefined) ? elev.totalt : '·';
+        ?>
+        <td class="totalt-col <?= tfKls ?>"><?= tfText ?></td>
+      </tr>
+      <? } ?>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td class="namn-col">Klassmedel</td>
+        <? for (var o = 0; o < omraden.length; o++) {
+          var p = klassStats[omraden[o]];
+        ?>
+        <td>
+          <?= p !== null ? p : '·' ?>
+        </td>
+        <? } ?>
+        <td class="totalt-col">
+          <?= klassTotal !== null ? klassTotal : '·' ?>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:#ecd5c5"></span>0–49 · behöver träning</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#efe1c1"></span>50–74 · godkänt</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#d4e2cc"></span>75–89 · bra</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#b8cdb4"></span>90–100 · mycket bra</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="stangModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modal-namn"></h2>
+      <button class="modal-close" onclick="stangModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-medel" id="modal-medel"></div>
+  </div>
+</div>
+
+<script>
+  var allelevData = <?!= JSON.stringify(studenter) ?>;
+
+  function cellKlassJS(p) {
+    if (p === null || p === undefined) return 'lvl-none';
+    if (p < 50) return 'lvl-red';
+    if (p < 75) return 'lvl-yellow';
+    if (p < 90) return 'lvl-green';
+    return 'lvl-dark';
+  }
+
+  function visaElev(idx) {
+    var elev = allelevData[idx];
+    document.getElementById('modal-namn').textContent = elev.namn;
+
+    // Gruppera tester per område
+    var perOmrade = {};
+    for (var i = 0; i < elev.tester.length; i++) {
+      var t = elev.tester[i];
+      if (!perOmrade[t.omrade]) perOmrade[t.omrade] = [];
+      perOmrade[t.omrade].push(t);
+    }
+
+    var bodyHtml = '';
+    var omraden = Object.keys(perOmrade).sort();
+    for (var o = 0; o < omraden.length; o++) {
+      var om = omraden[o];
+      bodyHtml += '<div class="modal-omrade">';
+      bodyHtml += '<div class="modal-omrade-rubrik">' + om + '</div>';
+      bodyHtml += '<div class="modal-tests">';
+      var tests = perOmrade[om];
+      for (var i = 0; i < tests.length; i++) {
+        var t = tests[i];
+        var kls = cellKlassJS(t.procent);
+        bodyHtml += '<div class="modal-chip ' + kls + '">';
+        bodyHtml += '<span class="chip-id">' + t.testId + '</span>';
+        bodyHtml += '<span class="chip-val">' + t.procent + '</span>';
+        bodyHtml += '<span class="chip-pct">%</span>';
+        bodyHtml += '</div>';
+      }
+      bodyHtml += '</div></div>';
+    }
+    document.getElementById('modal-body').innerHTML = bodyHtml;
+
+    // Medel-rad
+    var medelHtml = '';
+    for (var o = 0; o < omraden.length; o++) {
+      var om = omraden[o];
+      var med = elev.omradeMedel[om];
+      if (med === null) continue;
+      medelHtml += '<div class="modal-medel-item">';
+      medelHtml += '<div class="label">' + om + ' medel</div>';
+      medelHtml += '<div class="val" style="color:var(--accent)">' + med + '<span style="font-size:13px;color:var(--mute)">%</span></div>';
+      medelHtml += '</div>';
+    }
+    if (elev.totalt !== null) {
+      medelHtml += '<div class="modal-medel-item" style="margin-left:auto">';
+      medelHtml += '<div class="label">Totalt</div>';
+      medelHtml += '<div class="val" style="color:var(--ink)">' + elev.totalt + '<span style="font-size:13px;color:var(--mute)">%</span></div>';
+      medelHtml += '</div>';
+    }
+    document.getElementById('modal-medel').innerHTML = medelHtml;
+
+    document.getElementById('modal-backdrop').classList.add('open');
+  }
+
+  function stangModal(event) {
+    if (event && event.target !== document.getElementById('modal-backdrop')) return;
+    document.getElementById('modal-backdrop').classList.remove('open');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('modal-backdrop').classList.remove('open');
+  });
+
+  var sortDir = {};
+  function sortTable(col) {
+    var table = document.getElementById('klass-table');
+    var tbody = table.querySelector('tbody');
+    var rows  = Array.from(tbody.querySelectorAll('tr'));
+    var asc   = !sortDir[col];
+    sortDir   = {};
+    sortDir[col] = asc;
+
+    rows.sort(function(a, b) {
+      var av = a.cells[col].textContent.trim();
+      var bv = b.cells[col].textContent.trim();
+      var an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+      return asc ? av.localeCompare(bv, 'sv') : bv.localeCompare(av, 'sv');
+    });
+
+    rows.forEach(function(r) { tbody.appendChild(r); });
+
+    table.querySelectorAll('th .sort-icon').forEach(function(icon, i) {
+      icon.textContent = i === col ? (asc ? '↑' : '↓') : '↕';
+    });
+  }
+</script>
+
+</body>
+</html>

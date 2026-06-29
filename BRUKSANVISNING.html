@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historiatester Hi1B – Bruksanvisning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #f4f1ea;
+      --surface: #ffffff;
+      --ink:     #1c1f1d;
+      --mute:    #7a7a76;
+      --hair:    #ece8de;
+      --accent:  #3a6b54;
+      --warn:    #a86a3e;
+      --info:    #3a5b8c;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 0 0 80px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--accent);
+      color: #fff;
+      padding: 56px 40px 48px;
+      margin-bottom: 48px;
+    }
+    .hero-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 15px;
+      opacity: 0.85;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .chip {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+    .nav h3 {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .nav ol {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 24px;
+    }
+    @media (max-width: 540px) { .nav ol { grid-template-columns: 1fr; } }
+    .nav ol li a {
+      font-size: 13px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav ol li a:hover { text-decoration: underline; }
+    .nav ol li::before {
+      content: attr(data-n) ". ";
+      color: var(--mute);
+      font-size: 12px;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 52px; }
+    section h2 {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--hair);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 .icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    section h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 24px 0 8px;
+      color: var(--ink);
+    }
+    section p { font-size: 14px; color: var(--ink); margin-bottom: 12px; }
+    section ul, section ol {
+      font-size: 14px;
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    section li { margin-bottom: 5px; }
+    section li::marker { color: var(--accent); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card p { margin-bottom: 0; font-size: 13px; color: var(--mute); }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 13.5px;
+      line-height: 1.6;
+      display: flex;
+      gap: 12px;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+    .callout.tip  { background: #e8f0eb; border-left: 3px solid var(--accent); }
+    .callout.warn { background: #f3e8de; border-left: 3px solid var(--warn); }
+    .callout.info { background: #e0e9f5; border-left: 3px solid var(--info); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 400px; }
+    th {
+      background: #fafaf6;
+      padding: 10px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mute);
+      text-align: left;
+      border-bottom: 1px solid var(--hair);
+    }
+    td {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--hair);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    td code { font-family: monospace; background: #f0ede6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+    /* ── Code blocks ── */
+    .code-block {
+      background: #1c1f1d;
+      color: #d4cfbf;
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 12px 0 16px;
+    }
+    .code-block .comment { color: #7a8a72; }
+    .code-block .key { color: #a8c4a2; }
+    .code-block .val { color: #e8c896; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; padding: 0; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(step);
+      background: var(--accent);
+      color: #fff;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 16px 0;
+      row-gap: 8px;
+    }
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      min-width: 100px;
+    }
+    .flow-arrow {
+      color: var(--mute);
+      font-size: 18px;
+      padding: 0 6px;
+    }
+
+    /* ── File badges ── */
+    .file-badge {
+      display: inline-block;
+      background: #e8f0eb;
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--mute);
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hair);
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-label">Dokumentation</div>
+    <h1>Historiatester Hi1B<br>Bruksanvisning</h1>
+    <p>Ett automatiserat system för att skapa grammatiktest, rätta elevernas svar och visa resultaten på en personlig resultatsida – allt via Google Kalkylark och Google Formulär.</p>
+    <div class="hero-chips">
+      <span class="chip">Google Kalkylark</span>
+      <span class="chip">Google Formulär</span>
+      <span class="chip">Apps Script</span>
+      <span class="chip">Webbapp</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Innehållsförteckning -->
+  <div class="nav">
+    <h3>Innehåll</h3>
+    <ol>
+      <li data-n="1"><a href="#oversikt">Vad systemet gör</a></li>
+      <li data-n="2"><a href="#flode">Flödet steg för steg</a></li>
+      <li data-n="3"><a href="#kalkylark">Kalkylarkstruktur</a></li>
+      <li data-n="4"><a href="#script">Apps Script-filerna</a></li>
+      <li data-n="5"><a href="#setup">Första gången: Sätta upp systemet</a></li>
+      <li data-n="6"><a href="#nytt-test">Skapa ett nytt test</a></li>
+      <li data-n="7"><a href="#elever">Lägga till elever</a></li>
+      <li data-n="8"><a href="#webbapp">Webbapparna</a></li>
+      <li data-n="9"><a href="#automatiskt">Vad som sköts automatiskt</a></li>
+      <li data-n="10"><a href="#regler">Viktiga regler att komma ihåg</a></li>
+      <li data-n="11"><a href="#felsok">Felsökning</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. Vad systemet gör -->
+  <section id="oversikt">
+    <h2><span class="icon">📋</span> Vad systemet gör</h2>
+    <p>Systemet låter läraren skapa grammatiktest som Google Formulär, rätta dem automatiskt mot ett facit och visa varje elevs resultat på en personlig, snygg resultatsida. Läraren får också en klassöversikt i webbläsaren.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0;">
+      <div class="card">
+        <div class="card-title">📝 Skapa test</div>
+        <p>Fyll i frågor i kalkylarket, klicka på en knapp – formuläret skapas automatiskt.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">✅ Automatisk rättning</div>
+        <p>När en elev lämnar in rättas svaren mot facit och resultatet loggas direkt.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Resultatvy</div>
+        <p>Varje elev får en personlig länk till sina resultat. Läraren ser hela klassen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Flödet -->
+  <section id="flode">
+    <h2><span class="icon">🔄</span> Flödet steg för steg</h2>
+    <p>Så här hänger allt ihop från det att en elev svarar till att resultatet syns:</p>
+
+    <div class="flow">
+      <div class="flow-step">Elev svarar<br>på formulär</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Trigger<br>aktiveras</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Svar rättas<br>mot facit</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Loggas i<br>RESULTAT_LOGG</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Klassöversikt<br>uppdateras</div>
+    </div>
+    <div class="flow" style="margin-top:4px;">
+      <div class="flow-step" style="border-color:var(--accent);color:var(--accent)">Första gången:<br>Token + välkomstmejl</div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <span>Allt efter att eleven skickat in formuläret sker helt automatiskt – du behöver inte göra någonting.</span>
+    </div>
+  </section>
+
+  <!-- 3. Kalkylark -->
+  <section id="kalkylark">
+    <h2><span class="icon">📊</span> Kalkylarkstruktur</h2>
+    <p>Allt samlas i ett Google Kalkylark som kallas <strong>Master</strong>. Det ska innehålla följande flikar:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Flik</th>
+            <th>Kolumner</th>
+            <th>Syfte</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Testregister</td>
+            <td><code>A: TestID</code> <code>B: Område</code> <code>C: Facitflik</code> <code>D: Svarssheet</code></td>
+            <td>En rad per test. Scriptet slår upp vilket facit och vilken svarssheet som hör till varje formulär.</td>
+          </tr>
+          <tr>
+            <td>Elever</td>
+            <td><code>A: Email</code> <code>B: Namn</code> <code>C: Token</code></td>
+            <td>En rad per elev. Token fylls i automatiskt första gången eleven lämnar in. Rad 1 = rubrikrad.</td>
+          </tr>
+          <tr>
+            <td>RESULTAT_LOGG</td>
+            <td><code>A: Tidsstämpel</code> <code>B: Email</code> <code>C: TestID</code> <code>D: Område</code> <code>E: Procent</code> <code>F: Rätta</code> <code>G: Totalt</code></td>
+            <td>En rad per inlämning. Byggs på automatiskt. Redigera aldrig manuellt.</td>
+          </tr>
+          <tr>
+            <td>KLASSÖVERSIKT</td>
+            <td>Byggs om automatiskt</td>
+            <td>Namn + medel per område per elev. Byggs om helt vid varje inlämning – redigera aldrig manuellt.</td>
+          </tr>
+          <tr>
+            <td>FACIT_V01, FACIT_V02 …</td>
+            <td><code>A: Frågenummer</code> <code>B: Rätt svar</code></td>
+            <td>En facitflik per test. Ingen rubrikrad. Svaren ska stämma exakt med elevernas svar (gemener/versaler spelar ingen roll).</td>
+          </tr>
+          <tr>
+            <td>Frågor</td>
+            <td><code>A: Frågetext</code> (kolumn B+ = svarsalternativ vid flerval)</td>
+            <td>Fyll i frågorna här innan du skapar ett formulär. Används av formulärskaparen.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Facitfliken har ingen rubrikrad.</strong> Rad 1 är alltså redan det första svaret. Se till att antalet rader i facitfliken stämmer exakt med antalet frågor i formuläret.</span>
+    </div>
+  </section>
+
+  <!-- 4. Script-filerna -->
+  <section id="script">
+    <h2><span class="icon">⚙️</span> Apps Script-filerna</h2>
+    <p>Scriptkoden finns i fyra filer under <code>gas/</code> i repot. Dessa kopieras in i Google Apps Script som är kopplat till Master-kalkylarket.</p>
+
+    <div class="card">
+      <div class="card-title"><span class="file-badge">formularskapare.js</span> Formulärskapare</div>
+      <p>Skapar ett Google Formulär från fliken "Frågor". Körs manuellt via menyval i kalkylarket: <strong>📝 Formulär → Skapa nytt formulär</strong>. Lägger formuläret i en angiven Google Drive-mapp.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">resultathantering.js</span> Resultathantering</div>
+      <p>Triggas automatiskt när en elev skickar in ett formulär. Rättar svaren mot facit, loggar resultatet, uppdaterar klassöversikten och skickar välkomstmejl med länk första gången.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">webbapp.js</span> Webbapp</div>
+      <p>Hanterar anrop till webbappen. Visar elevens resultatsida (<code>?token=…</code>) eller klassöversikten (<code>?view=klass</code>) beroende på URL-parametrar.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">webbapp1.html</span> Elevens resultatsida</div>
+      <p>HTML-mallen för elevens personliga resultatsida. Dashboard-layout med statistikkort, matristabell och sparklines.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">klassoversikt.html</span> Klassöversikt</div>
+      <p>HTML-mallen för lärarens klassöversikt. Sorterbar tabell med alla elever och deras medel per område.</p>
+    </div>
+  </section>
+
+  <!-- 5. Setup -->
+  <section id="setup">
+    <h2><span class="icon">🚀</span> Första gången: Sätta upp systemet</h2>
+
+    <h3>Steg 1 – Förbered Master-kalkylarket</h3>
+    <ol class="steps">
+      <li>Skapa ett nytt Google Kalkylark och döp det till något passande (t.ex. "Historiatester Hi1B Master").</li>
+      <li>Skapa flikarna: <code>Testregister</code>, <code>Elever</code>, <code>RESULTAT_LOGG</code>, <code>Frågor</code>.</li>
+      <li>Lägg till rubrikrader i Testregister, Elever och RESULTAT_LOGG (se tabellen i avsnitt 3).</li>
+      <li>Fyll i dina elevers e-postadresser och namn i <strong>Elever</strong>-fliken (kolumn A och B). Lämna kolumn C (Token) tom.</li>
+    </ol>
+
+    <h3>Steg 2 – Öppna Apps Script</h3>
+    <ol class="steps">
+      <li>I kalkylarket: klicka på <strong>Tillägg → Apps Script</strong>.</li>
+      <li>Ta bort den tomma <code>Code.gs</code>-filen som skapas automatiskt.</li>
+      <li>Skapa fyra nya filer och klistra in koden från respektive fil i <code>gas/</code>-mappen i repot:
+        <ul style="margin-top:8px;">
+          <li><code>formularskapare.gs</code> ← innehållet från <code>gas/formularskapare.js</code></li>
+          <li><code>resultathantering.gs</code> ← innehållet från <code>gas/resultathantering.js</code></li>
+          <li><code>webbapp.gs</code> ← innehållet från <code>gas/webbapp.js</code></li>
+          <li><code>webbapp1.html</code> ← innehållet från <code>gas/webbapp1.html</code></li>
+          <li><code>klassoversikt.html</code> ← innehållet från <code>gas/klassoversikt.html</code></li>
+        </ul>
+      </li>
+    </ol>
+
+    <h3>Steg 3 – Ändra FOLDER_ID i formularskapare.gs</h3>
+    <p>Längst upp i <code>formularskapare.gs</code> finns:</p>
+    <div class="code-block"><span class="key">var</span> <span class="val">FOLDER_ID</span> = <span class="val">"1RtD6bsSQM7T-8wE8caxTY0QYet6Kxj5F"</span>;</div>
+    <p>Byt ut värdet mot ID:t för den Google Drive-mapp där du vill spara dina formulär. Mapp-ID:t hittar du i webbläsarens adressfält när du öppnar mappen i Google Drive (den långa teckensträngen i URL:en).</p>
+
+    <h3>Steg 4 – Publicera elevernas webbapp</h3>
+    <ol class="steps">
+      <li>I Apps Script: klicka på <strong>Distribuera → Ny distribution</strong>.</li>
+      <li>Välj typ: <strong>Webbapp</strong>.</li>
+      <li>Inställningar:
+        <ul>
+          <li><strong>Kör som:</strong> Mig</li>
+          <li><strong>Vem har åtkomst:</strong> Alla</li>
+        </ul>
+      </li>
+      <li>Klicka <strong>Distribuera</strong> och kopiera den URL som visas.</li>
+      <li>Klistra in URL:en i <code>resultathantering.gs</code> längst upp:
+        <div class="code-block"><span class="key">var</span> <span class="val">WEBAPP_URL</span> = <span class="val">"https://script.google.com/a/macros/…"</span>;</div>
+      </li>
+      <li>Spara scriptet (Ctrl+S).</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>Viktigt:</strong> Kopiera in URL:en innan eleverna börjar skicka in svar. Annars skickas välkomstmejlet med en felaktig länk.</span>
+    </div>
+
+    <h3>Steg 5 – Publicera lärarens klassöversikt</h3>
+    <ol class="steps">
+      <li>Klicka på <strong>Distribuera → Ny distribution</strong> igen (detta skapar en separat distribution med annan URL).</li>
+      <li>Inställningar:
+        <ul>
+          <li><strong>Kör som:</strong> Mig</li>
+          <li><strong>Vem har åtkomst:</strong> Bara jag</li>
+        </ul>
+      </li>
+      <li>Klicka <strong>Distribuera</strong> och kopiera URL:en.</li>
+      <li>Din klassöversikt nås på: <code>DIN_LÄRAR_URL?view=klass</code></li>
+    </ol>
+
+    <h3>Steg 6 – Sätt upp triggern</h3>
+    <ol class="steps">
+      <li>I Apps Script: klicka på klocksymbolen i vänstermenyn (<strong>Utlösare</strong>).</li>
+      <li>Klicka på <strong>Lägg till utlösare</strong> (nedre höger).</li>
+      <li>Inställningar:
+        <ul>
+          <li><strong>Funktion:</strong> <code>onFormSubmit</code></li>
+          <li><strong>Händelsekälla:</strong> Från kalkylark</li>
+          <li><strong>Händelsetyp:</strong> Vid formulärinlämning</li>
+        </ul>
+      </li>
+      <li>Spara. Godkänn de behörigheter som efterfrågas.</li>
+    </ol>
+  </section>
+
+  <!-- 6. Nytt test -->
+  <section id="nytt-test">
+    <h2><span class="icon">📝</span> Skapa ett nytt test</h2>
+
+    <ol class="steps">
+      <li>Öppna fliken <strong>Frågor</strong> i kalkylarket. Rensa eventuellt gammalt innehåll.</li>
+      <li>Skriv in frågorna i kolumn A (en fråga per rad). Rad 1 kan vara en rubrik om du vill använda svarsalternativ – annars skriv bara frågor från rad 1.</li>
+      <li>Klicka på menyn <strong>📝 Formulär → Skapa nytt formulär</strong>. (Om menyn saknas: ladda om sidan.)</li>
+      <li>Formuläret skapas och du får en dialogruta med en länk för att redigera och en länk för att dela med elever.</li>
+      <li>Öppna formuläret och koppla det till Master-kalkylarket:
+        <ul>
+          <li>Klicka på fliken <strong>Svar</strong> i formuläret.</li>
+          <li>Klicka på kalkylbladssymbolen (länka till kalkylark).</li>
+          <li>Välj <strong>Välj ett befintligt kalkylblad</strong> → välj ditt Master-kalkylark.</li>
+          <li>Google skapar en ny flik i kalkylarket med svaren (t.ex. "Verb 1 (svar)").</li>
+        </ul>
+      </li>
+      <li>Skapa en facitflik i kalkylarket (t.ex. <code>FACIT_V01</code>):
+        <ul>
+          <li>Kolumn A: frågenummer (1, 2, 3 …) – valfritt, används ej av scriptet</li>
+          <li>Kolumn B: rätt svar, en per rad, <strong>ingen rubrikrad</strong></li>
+        </ul>
+      </li>
+      <li>Lägg till en rad i <strong>Testregister</strong>-fliken:
+        <ul>
+          <li>A: TestID (t.ex. <code>V01</code>)</li>
+          <li>B: Område (t.ex. <code>Verb</code>)</li>
+          <li>C: Facitflik (t.ex. <code>FACIT_V01</code>)</li>
+          <li>D: Svarssheet (exakt samma namn som fliken Google skapade, t.ex. <code>Verb 1 (svar)</code>)</li>
+        </ul>
+      </li>
+    </ol>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <span>Kontrollera att namnet i Testregister kolumn D stämmer <em>exakt</em> med fliknamnet i kalkylarket – stora/små bokstäver och mellanslag spelar roll.</span>
+    </div>
+  </section>
+
+  <!-- 7. Elever -->
+  <section id="elever">
+    <h2><span class="icon">👥</span> Lägga till elever</h2>
+    <p>Elever läggs till i <strong>Elever</strong>-fliken innan de börjar skicka in svar.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kolumn</th><th>Innehåll</th><th>Notering</th></tr></thead>
+        <tbody>
+          <tr><td>A – Email</td><td>Elevens e-postadress</td><td>Måste stämma exakt med den adress eleven använder i formuläret. Gemener rekommenderas.</td></tr>
+          <tr><td>B – Namn</td><td>Elevens fullständiga namn</td><td>Visas i välkomstmejlet och på resultatsidan.</td></tr>
+          <tr><td>C – Token</td><td>Lämnas tom</td><td>Fylls i automatiskt vid elevens första inlämning. Rör den inte.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Om en elev inte finns i listan när hen skickar in loggas inget resultat och inget välkomstmejl skickas. Lägg alltid till elever <em>innan</em> testet.</span>
+    </div>
+  </section>
+
+  <!-- 8. Webbapp -->
+  <section id="webbapp">
+    <h2><span class="icon">🌐</span> Webbapparna</h2>
+    <p>Det finns två distributioner av webbappen med olika åtkomstinställningar:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+      <div class="card">
+        <div class="card-title">📊 Elevens resultatsida</div>
+        <p><strong>Åtkomst:</strong> Alla (ingen inloggning krävs)<br>
+        <strong>URL-format:</strong> <code>WEBAPP_URL?token=xxx</code><br>
+        Skickas automatiskt till eleven via välkomstmejl första gången hen lämnar in.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🎓 Klassöversikt (lärare)</div>
+        <p><strong>Åtkomst:</strong> Bara du (Google-inloggning krävs)<br>
+        <strong>URL-format:</strong> <code>LÄRAR_URL?view=klass</code><br>
+        Öppnas direkt i webbläsaren. Visar alla elevers medel per område. Klicka på ett elevnamn för att se elevens individuella testresultat per område i ett detaljfönster.</p>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <span>Det finns <strong>två separata distributioner</strong> – en för elever och en för läraren. De har olika URL:er och olika åtkomstinställningar. Blanda inte ihop dem.</span>
+    </div>
+  </section>
+
+  <!-- 9. Automatiskt -->
+  <section id="automatiskt">
+    <h2><span class="icon">🤖</span> Vad som sköts automatiskt</h2>
+    <p>När systemet är uppsatt behöver du normalt inte göra något efter att en elev lämnat in:</p>
+    <ul>
+      <li>Svaren rättas mot facit</li>
+      <li>Resultatet loggas i RESULTAT_LOGG</li>
+      <li>KLASSÖVERSIKT byggs om</li>
+      <li>Om det är elevens första inlämning: token genereras och välkomstmejl skickas</li>
+      <li>Om eleven lämnar in igen sparas det bästa resultatet per test</li>
+    </ul>
+  </section>
+
+  <!-- 10. Viktiga regler -->
+  <section id="regler">
+    <h2><span class="icon">📌</span> Viktiga regler att komma ihåg</h2>
+
+    <h3>Vid kodändringar – uppdatera version, inte distribution</h3>
+    <p>När du ändrar koden i Apps Script måste du publicera ändringarna för att de ska gälla i webbappen. Gör <strong>alltid</strong> så här:</p>
+    <ol class="steps">
+      <li>Klicka på <strong>Distribuera → Hantera distributioner</strong>.</li>
+      <li>Klicka på pennan ✏️ bredvid din befintliga distribution.</li>
+      <li>Under "Version" – välj <strong>Ny version</strong>.</li>
+      <li>Klicka Distribuera. URL:en förblir oförändrad.</li>
+    </ol>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <span>Skapar du en <em>ny</em> distribution får du en ny URL. Då fungerar inte elevernas sparade länkar längre och välkomstmejlen måste skickas om.</span>
+    </div>
+
+    <h3>Nya formulär kopplas manuellt</h3>
+    <p>Google Apps Script kan inte automatiskt koppla ett nytt formulär till Master-kalkylarket. Det måste du göra manuellt via formulärets Svar-flik varje gång du skapar ett nytt test (se avsnitt 6, steg 5).</p>
+
+    <h3>Rör aldrig RESULTAT_LOGG eller KLASSÖVERSIKT manuellt</h3>
+    <p>Dessa flikar byggs om av scriptet. Manuella ändringar skrivs över eller kan orsaka fel.</p>
+  </section>
+
+  <!-- 11. Felsökning -->
+  <section id="felsok">
+    <h2><span class="icon">🔧</span> Felsökning</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Problem</th><th>Trolig orsak</th><th>Lösning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Elev får Google-felsida när hen öppnar sin länk</td>
+            <td>Länken i välkomstmejlet pekar på platshållar-URL (<code>DIN_WEBAPP_URL_HÄR</code>) – WEBAPP_URL var inte inställd när mejlet skickades</td>
+            <td>Kör funktionen <code>skickaOmLankar()</code> för att skicka korrekta länkar till alla elever med token</td>
+          </tr>
+          <tr>
+            <td>Inga resultat loggas trots att elever lämnat in</td>
+            <td>Trigern är inte satt, eller fliknamnet i Testregister stämmer inte med svarssheetens namn</td>
+            <td>Kontrollera triggern och att kolumn D i Testregister matchar exakt</td>
+          </tr>
+          <tr>
+            <td>Alla svar blir felaktiga (0%)</td>
+            <td>Facitets svar stämmer inte med elevernas svarformat</td>
+            <td>Korrigera facitfliken och kör <code>rattaOmAllaISheet()</code> för att rätta om befintliga svar</td>
+          </tr>
+          <tr>
+            <td>Välkomstmejl skickas aldrig</td>
+            <td>Elevens e-post i Elever-fliken stämmer inte med adressen i formuläret, eller eleven saknas i listan</td>
+            <td>Kontrollera att e-postadressen i Elever-fliken är identisk med den i formulärsvaret</td>
+          </tr>
+          <tr>
+            <td>KLASSÖVERSIKT ser konstig ut / kolumner på fel plats</td>
+            <td>Gammal data i loggen från testkörningar</td>
+            <td>Rensa RESULTAT_LOGG (behåll rubrikraden) och kör om rättningsfunktionen</td>
+          </tr>
+          <tr>
+            <td>Webbappen visar gamla resultat</td>
+            <td>Koden uppdaterades men en ny distribution skapades istället för en ny version</td>
+            <td>Se till att alltid använda "Ny version" i befintlig distribution, inte "Ny distribution"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Inbyggda hjälpfunktioner</h3>
+    <p>Följande funktioner finns redan i <code>resultathantering.gs</code> och kan köras direkt från Apps Script:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Funktion</th><th>Vad den gör</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>skickaOmLankar()</code></td>
+            <td>Skickar ett nytt mejl med korrekt länk till alla elever som har en token. Kör om elever fått en trasig länk.</td>
+          </tr>
+          <tr>
+            <td><code>uppdateraKlassoversiktManuellt()</code></td>
+            <td>Uppdaterar KLASSÖVERSIKT-fliken utan att vänta på ett nytt formulärinlämning. Praktisk efter manuella ändringar i RESULTAT_LOGG.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Hjälpfunktioner att lägga till vid behov</h3>
+    <p>Dessa finns <em>inte</em> i koden – klistra in dem tillfälligt i <code>resultathantering.gs</code> om du behöver dem:</p>
+
+    <p><strong>Rätta om alla svar i en svarssheet:</strong></p>
+    <div class="code-block">
+<span class="comment">// Byt svarssheetNamn till korrekt fliknamn och kör</span>
+<span class="key">function</span> rattaOmAllaISheet() {
+  <span class="key">var</span> svarssheetNamn = <span class="val">"Verb 1 (svar)"</span>; <span class="comment">// ändra detta</span>
+  <span class="key">var</span> ss = SpreadsheetApp.getActiveSpreadsheet();
+  <span class="key">var</span> sheet = ss.getSheetByName(svarssheetNamn);
+  <span class="key">for</span> (<span class="key">var</span> rad = 2; rad &lt;= sheet.getLastRow(); rad++) {
+    onFormSubmit({ range: sheet.getRange(rad, 1) });
+  }
+}
+    </div>
+
+    <p><strong>Testa ett enskilt svar utan att skicka in formuläret:</strong></p>
+    <div class="code-block">
+<span class="comment">// Byt till rätt fliknamn och radnummer och kör</span>
+<span class="key">function</span> testOnFormSubmit() {
+  <span class="key">var</span> svarssheetNamn = <span class="val">"Verb 1 (svar)"</span>; <span class="comment">// ändra detta</span>
+  <span class="key">var</span> testRad = 2;                         <span class="comment">// ändra detta</span>
+  <span class="key">var</span> ss = SpreadsheetApp.getActiveSpreadsheet();
+  <span class="key">var</span> sheet = ss.getSheetByName(svarssheetNamn);
+  onFormSubmit({ range: sheet.getRange(testRad, 1) });
+}
+    </div>
+  </section>
+
+  <div class="footer">
+    Historiatester Hi1B · Bruksanvisning · github.com/erengisle/hi-tester-hi1b
+  </div>
+
+</div>
+</body>
+</html>
