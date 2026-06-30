@@ -7,8 +7,8 @@
  *   Testregister  – A: TestID, B: Område, C: Facitflik, D: Svarssheet
  *   Elever        – A: Email, B: Namn, C: Token (unik länknyckel)
  *   RESULTAT_LOGG – A: Tidsstämpel, B: Email, C: TestID, D: Område,
- *                   E: Procent, F: Rätta, G: Totalt
- *   KLASSÖVERSIKT – A: Namn, B+: ett område per kolumn (rubrik i rad 1)
+ *                   E: Procent, F: Rätta, G: Totalt, H: Försök
+ *   KLASSÖVERSIKT – A: Namn, B+: ett test per kolumn, sista: Medel
  *
  * Konstant att fylla i:
  *   WEBAPP_URL – URL till den publicerade webbappen (Distribuera → Ny distribution)
@@ -146,24 +146,33 @@ function hamtaElevResultat(ss, email) {
 
 // Returnerar aggregerad data för hela klassen (används av klassöversikts-webbappen)
 function hamtaKlassData(ss) {
+  var reg     = ss.getSheetByName("Testregister");
+  var regData = reg ? reg.getDataRange().getValues() : [];
+  var testOrdning = [];
+  var testOmrade  = {};
+  for (var i = 1; i < regData.length; i++) {
+    var tid = regData[i][0] ? regData[i][0].toString().trim() : "";
+    if (tid) {
+      testOrdning.push(tid);
+      testOmrade[tid] = regData[i][1] ? regData[i][1].toString() : "";
+    }
+  }
+
   var elever = ss.getSheetByName("Elever").getDataRange().getValues();
   var logg   = ss.getSheetByName("RESULTAT_LOGG").getDataRange().getValues();
 
+  // basta[email][testId] = bästa procent
   var basta = {};
-  var omradenOrdning = [];
   for (var i = 1; i < logg.length; i++) {
     var email   = logg[i][1] ? logg[i][1].toString().toLowerCase().trim() : "";
     var testId  = logg[i][2] ? logg[i][2].toString() : "";
-    var omrade  = logg[i][3] ? logg[i][3].toString() : "";
     var procent = parseInt(logg[i][4]) || 0;
     if (!email || !testId) continue;
     if (!basta[email]) basta[email] = {};
-    if (!basta[email][testId] || procent > basta[email][testId].procent) {
-      basta[email][testId] = { procent: procent, omrade: omrade };
+    if (!basta[email][testId] || procent > basta[email][testId]) {
+      basta[email][testId] = procent;
     }
-    if (omradenOrdning.indexOf(omrade) === -1) omradenOrdning.push(omrade);
   }
-  omradenOrdning.sort();
 
   var studenter = [];
   for (var i = 1; i < elever.length; i++) {
@@ -171,50 +180,34 @@ function hamtaKlassData(ss) {
     var namn  = elever[i][1] ? elever[i][1].toString() : "";
     if (!email || !namn) continue;
 
-    var elevData    = basta[email] || {};
-    var omradeMedel = {};
-    var totalSum = 0, totalCount = 0;
+    var elevData = basta[email] || {};
+    var testResultat = {};
+    var sum = 0, count = 0;
 
-    for (var o = 0; o < omradenOrdning.length; o++) {
-      var om = omradenOrdning[o];
-      var omSum = 0, omCount = 0;
-      for (var testId in elevData) {
-        if (elevData[testId].omrade === om) { omSum += elevData[testId].procent; omCount++; }
-      }
-      var med = omCount > 0 ? Math.round(omSum / omCount) : null;
-      omradeMedel[om] = med;
-      if (med !== null) { totalSum += med; totalCount++; }
+    for (var t = 0; t < testOrdning.length; t++) {
+      var tid = testOrdning[t];
+      var v   = elevData[tid] !== undefined ? elevData[tid] : null;
+      testResultat[tid] = v;
+      if (v !== null) { sum += v; count++; }
     }
-
-    // Individuella testresultat sorterade per område och testnummer
-    var tester = [];
-    for (var testId in elevData) {
-      var num = parseInt(testId.replace(/[^0-9]/g, '')) || 1;
-      tester.push({ testId: testId, omrade: elevData[testId].omrade, procent: elevData[testId].procent, num: num });
-    }
-    tester.sort(function(a, b) {
-      if (a.omrade < b.omrade) return -1;
-      if (a.omrade > b.omrade) return 1;
-      return a.num - b.num;
-    });
 
     studenter.push({
-      namn:        namn,
-      omradeMedel: omradeMedel,
-      totalt:      totalCount > 0 ? Math.round(totalSum / totalCount) : null,
-      tester:      tester
+      namn:         namn,
+      testResultat: testResultat,
+      totalt:       count > 0 ? Math.round(sum / count) : null
     });
   }
 
-  // Klassmedel per område
+  // Klassmedel per test
   var klassStats = {};
-  for (var o = 0; o < omradenOrdning.length; o++) {
-    var om = omradenOrdning[o];
+  for (var t = 0; t < testOrdning.length; t++) {
+    var tid = testOrdning[t];
     var s = 0, c = 0;
     for (var j = 0; j < studenter.length; j++) {
-      if (studenter[j].omradeMedel[om] !== null) { s += studenter[j].omradeMedel[om]; c++; }
+      var v = studenter[j].testResultat[tid];
+      if (v !== null) { s += v; c++; }
     }
-    klassStats[om] = c > 0 ? Math.round(s / c) : null;
+    klassStats[tid] = c > 0 ? Math.round(s / c) : null;
   }
 
   var ktSum = 0, ktCount = 0;
@@ -223,7 +216,8 @@ function hamtaKlassData(ss) {
   }
 
   return {
-    omraden:    omradenOrdning,
+    tester:     testOrdning,
+    testOmrade: testOmrade,
     studenter:  studenter,
     klassStats: klassStats,
     klassTotal: ktCount > 0 ? Math.round(ktSum / ktCount) : null
@@ -255,9 +249,20 @@ function ratta(svar, facit) {
 function loggaResultat(ss, timestamp, email, testId, omrade, rattning) {
   var logg = ss.getSheetByName("RESULTAT_LOGG");
   if (!logg) return;
+
+  // Räkna antal tidigare försök på detta test för denna elev
+  var data  = logg.getDataRange().getValues();
+  var forsok = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1].toString().toLowerCase().trim() === email &&
+        data[i][2].toString() === testId.toString()) {
+      forsok++;
+    }
+  }
+
   logg.appendRow([
     timestamp, email, testId, omrade,
-    rattning.procent, rattning.ratt, rattning.totalt
+    rattning.procent, rattning.ratt, rattning.totalt, forsok + 1
   ]);
 }
 
@@ -303,38 +308,34 @@ function uppdateraKlassoversikt(ss) {
   var oversikt = ss.getSheetByName("KLASSÖVERSIKT");
   if (!oversikt) oversikt = ss.insertSheet("KLASSÖVERSIKT");
 
-  var MAX_TESTER = 10;
+  // Hämta testlista i ordning från Testregister
+  var reg     = ss.getSheetByName("Testregister");
+  var regData = reg ? reg.getDataRange().getValues() : [];
+  var testOrdning = [];
+  for (var i = 1; i < regData.length; i++) {
+    var tid = regData[i][0] ? regData[i][0].toString().trim() : "";
+    if (tid) testOrdning.push(tid);
+  }
 
   var elever = ss.getSheetByName("Elever").getDataRange().getValues();
   var logg   = ss.getSheetByName("RESULTAT_LOGG").getDataRange().getValues();
 
-  // Samla bästa resultat per elev och test från loggen
-  // basta[email][testId] = { procent, omrade }
+  // Samla bästa resultat per elev och test (kolumn E = procent)
   var basta = {};
-  var omradenOrdning = [];
   for (var i = 1; i < logg.length; i++) {
     var email   = logg[i][1] ? logg[i][1].toString().toLowerCase().trim() : "";
     var testId  = logg[i][2] ? logg[i][2].toString() : "";
-    var omrade  = logg[i][3] ? logg[i][3].toString() : "";
     var procent = parseInt(logg[i][4]) || 0;
     if (!email || !testId) continue;
     if (!basta[email]) basta[email] = {};
-    if (!basta[email][testId] || procent > basta[email][testId].procent) {
-      basta[email][testId] = { procent: procent, omrade: omrade };
+    if (!basta[email][testId] || procent > basta[email][testId]) {
+      basta[email][testId] = procent;
     }
-    if (omradenOrdning.indexOf(omrade) === -1) omradenOrdning.push(omrade);
-  }
-  omradenOrdning.sort();
-
-  // Bygg rubrikrad: alltid MAX_TESTER kolumner per område + medel-kolumn (ingen Totalt)
-  var rubrik = ["Namn"];
-  for (var o = 0; o < omradenOrdning.length; o++) {
-    var om = omradenOrdning[o];
-    for (var t = 1; t <= MAX_TESTER; t++) rubrik.push(om + " " + t);
-    rubrik.push(om + " medel");
   }
 
-  var rader = [rubrik];
+  // Rubrikrad: Namn | Självtest 1 | Självtest 2 | … | Medel
+  var rubrik = ["Namn"].concat(testOrdning).concat(["Medel"]);
+  var rader  = [rubrik];
 
   for (var i = 1; i < elever.length; i++) {
     var email = elever[i][0] ? elever[i][0].toString().toLowerCase().trim() : "";
@@ -342,49 +343,28 @@ function uppdateraKlassoversikt(ss) {
     if (!email || !namn) continue;
 
     var elevData = basta[email] || {};
-
-    // Bygg uppslagstabell: "omrade_testnummer" → procent för denna elev
-    var elevVarden = {};
-    for (var testId in elevData) {
-      var num = parseInt(testId.replace(/[^0-9]/g, '')) || 1;
-      elevVarden[elevData[testId].omrade + "_" + num] = elevData[testId].procent;
-    }
-
     var rad = [namn];
+    var sum = 0, count = 0;
 
-    for (var o = 0; o < omradenOrdning.length; o++) {
-      var om = omradenOrdning[o];
-      var omSum = 0, omCount = 0;
-
-      for (var t = 1; t <= MAX_TESTER; t++) {
-        var v = elevVarden[om + "_" + t] !== undefined ? elevVarden[om + "_" + t] : "";
-        rad.push(v);
-        if (v !== "") { omSum += v; omCount++; }
-      }
-
-      rad.push(omCount > 0 ? Math.round(omSum / omCount) : "");
+    for (var t = 0; t < testOrdning.length; t++) {
+      var v = elevData[testOrdning[t]] !== undefined ? elevData[testOrdning[t]] : "";
+      rad.push(v);
+      if (v !== "") { sum += v; count++; }
     }
-
+    rad.push(count > 0 ? Math.round(sum / count) : "");
     rader.push(rad);
   }
 
   // Skriv allt i ett anrop
   oversikt.clearContents();
   oversikt.clearFormats();
-  var range = oversikt.getRange(1, 1, rader.length, rubrik.length);
-  range.setValues(rader);
+  oversikt.getRange(1, 1, rader.length, rubrik.length).setValues(rader);
 
-  // Formatering: rubrikrad fet
+  // Rubrikrad och sista kolumnen (Medel) i fetstil
   oversikt.getRange(1, 1, 1, rubrik.length).setFontWeight("bold");
+  oversikt.getRange(1, rubrik.length, rader.length, 1).setFontWeight("bold");
 
-  // Medel-kolumner i fetstil
-  for (var c = 1; c <= rubrik.length; c++) {
-    if (rubrik[c - 1] && rubrik[c - 1].toString().indexOf(" medel") !== -1) {
-      oversikt.getRange(1, c, rader.length, 1).setFontWeight("bold");
-    }
-  }
-
-  // Färgkodning av celler med värden
+  // Färgkodning av celler med procentvärden
   for (var r = 2; r <= rader.length; r++) {
     for (var c = 2; c <= rubrik.length; c++) {
       var v = rader[r - 1][c - 1];
