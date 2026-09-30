@@ -12,6 +12,10 @@ function doGet(e) {
   var view  = e && e.parameter && e.parameter.view  ? e.parameter.view  : "";
   var token = e && e.parameter && e.parameter.token ? e.parameter.token : "";
 
+  if (view === "start") {
+    return visaStartsida();
+  }
+
   if (view === "klass") {
     var klass = e && e.parameter && e.parameter.klass ? e.parameter.klass : "";
     return visaKlassoversikt(klass);
@@ -36,6 +40,16 @@ function doGet(e) {
 
   return template.evaluate()
     .setTitle(elevInfo.namn + " – Resultat på självtester")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function visaStartsida() {
+  var ss         = SpreadsheetApp.getActiveSpreadsheet();
+  var formularer = hamtaFormularlankar(ss);
+  var template   = HtmlService.createTemplateFromFile("startsida");
+  template.formularer = formularer;
+  return template.evaluate()
+    .setTitle("Historia – Självtester")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

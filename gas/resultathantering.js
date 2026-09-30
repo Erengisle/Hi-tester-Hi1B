@@ -144,6 +144,23 @@ function hamtaElevResultat(ss, email) {
   return Object.keys(basta).map(function (k) { return basta[k]; });
 }
 
+// Returnerar formulärlänkar från fliken "Formulärlänkar" (skapad av formularskapare.js)
+function hamtaFormularlankar(ss) {
+  var flik = ss.getSheetByName("Formulärlänkar");
+  if (!flik) return [];
+  var data = flik.getDataRange().getValues();
+  var resultat = [];
+  for (var i = 1; i < data.length; i++) {
+    var testId = data[i][0] ? data[i][0].toString().trim() : "";
+    var omrade = data[i][1] ? data[i][1].toString().trim() : "";
+    var antal  = data[i][2] || 0;
+    var lank   = data[i][3] ? data[i][3].toString().trim() : "";
+    if (!testId || !lank) continue;
+    resultat.push({ testId: testId, omrade: omrade, antal: antal, lank: lank });
+  }
+  return resultat;
+}
+
 // Returnerar alla unika klasser från Elever-sheetet
 function hamtaKlasser(ss) {
   var elever = ss.getSheetByName("Elever");
