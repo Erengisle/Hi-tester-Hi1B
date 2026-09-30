@@ -22,6 +22,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("📝 Formulär")
     .addItem("Skapa nytt formulär", "skapaFormular")
+    .addItem("Hämta befintliga länkar", "hamtaBefintligaLankar")
     .addToUi();
 }
 
@@ -209,6 +210,35 @@ function uppdateraSvarssheets(ss) {
       }
     }
   }
+}
+
+// ── Hämta länkar från befintliga formulär i mappen ───────────────────────────
+function hamtaBefintligaLankar() {
+  var mapp   = DriveApp.getFolderById(FOLDER_ID);
+  var filer  = mapp.getFilesByType(MimeType.GOOGLE_FORMS);
+  var skapade = [];
+
+  while (filer.hasNext()) {
+    var fil  = filer.next();
+    var form = FormApp.openById(fil.getId());
+    var titel = form.getTitle();
+
+    // Försök plocka ut TestID ur titeln (formatet: "... – Självtest 1_1_U1 – ...")
+    var match = titel.match(/Självtest\s+(\S+)\s+–\s+(.+)$/);
+    var testId = match ? match[1] : titel;
+    var omrade = match ? match[2].trim() : "";
+
+    skapade.push({ testId: testId, omrade: omrade, antal: form.getItems().length, lank: form.getPublishedUrl() });
+  }
+
+  if (skapade.length === 0) {
+    SpreadsheetApp.getUi().alert("Inga formulär hittades i mappen.");
+    return;
+  }
+
+  skapade.sort(function(a, b) { return a.testId.localeCompare(b.testId, 'sv'); });
+  sparaFormularlankar(SpreadsheetApp.getActiveSpreadsheet(), skapade);
+  SpreadsheetApp.getUi().alert("Klart! " + skapade.length + " formulärlänkar sparade i fliken \"Formulärlänkar\".");
 }
 
 // ── Fisher-Yates-shuffle ───────────────────────────────────────────────────────
