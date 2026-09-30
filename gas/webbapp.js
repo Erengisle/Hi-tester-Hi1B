@@ -13,7 +13,8 @@ function doGet(e) {
   var token = e && e.parameter && e.parameter.token ? e.parameter.token : "";
 
   if (view === "klass") {
-    return visaKlassoversikt();
+    var klass = e && e.parameter && e.parameter.klass ? e.parameter.klass : "";
+    return visaKlassoversikt(klass);
   }
 
   if (!token) {
@@ -38,13 +39,13 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-function visaKlassoversikt() {
+function visaKlassoversikt(klassFilter) {
   var ss        = SpreadsheetApp.getActiveSpreadsheet();
-  var klassData = hamtaKlassData(ss);
+  var klassData = hamtaKlassData(ss, klassFilter || "");
   var template  = HtmlService.createTemplateFromFile("klassoversikt");
   template.klassData = klassData;
   return template.evaluate()
-    .setTitle("Klassöversikt – Historia Hi1B")
+    .setTitle("Klassöversikt – " + (klassFilter || "Alla klasser"))
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

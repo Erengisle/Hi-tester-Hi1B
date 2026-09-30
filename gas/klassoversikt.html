@@ -270,10 +270,23 @@
 <div class="header">
   <div>
     <div class="header-label">Historia · Klassöversikt</div>
-    <h1>Resultatöversikt</h1>
+    <h1><?= klassData.klass ?></h1>
   </div>
   <div class="header-meta"><?= studenter.length ?> elever</div>
 </div>
+
+<? if (klassData.klasser && klassData.klasser.length > 1) { ?>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+  <? for (var k = 0; k < klassData.klasser.length; k++) { var kn = klassData.klasser[k]; ?>
+  <a href="?view=klass&klass=<?= encodeURIComponent(kn) ?>"
+     style="padding:6px 14px;border-radius:20px;border:1px solid var(--hair);font-size:12px;font-weight:500;text-decoration:none;
+            background:<?= kn === klassData.klass ? 'var(--accent)' : 'var(--surface)' ?>;
+            color:<?= kn === klassData.klass ? '#fff' : 'var(--ink)' ?>">
+    <?= kn ?>
+  </a>
+  <? } ?>
+</div>
+<? } ?>
 
 <div class="stat-grid">
   <div class="stat-card">

@@ -5,7 +5,7 @@
  *
  * Flikar i kalkylarket:
  *   Testregister  – A: TestID, B: Område, C: Facitflik, D: Svarssheet
- *   Elever        – A: Email, B: Namn, C: Token (unik länknyckel)
+ *   Elever        – A: Email, B: Namn, C: Token (unik länknyckel), D: Klass
  *   RESULTAT_LOGG – A: Tidsstämpel, B: Email, C: TestID, D: Område,
  *                   E: Procent, F: Rätta, G: Totalt, H: Försök
  *   KLASSÖVERSIKT – A: Namn, B+: ett test per kolumn, sista: Medel
@@ -87,7 +87,7 @@ function hittaElev(ss, email) {
   var data   = elever.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (data[i][0].toString().toLowerCase().trim() === email) {
-      return { email: data[i][0], namn: data[i][1], token: data[i][2] || "", rad: i + 1 };
+      return { email: data[i][0], namn: data[i][1], token: data[i][2] || "", klass: data[i][3] || "", rad: i + 1 };
     }
   }
   return null;
@@ -99,7 +99,7 @@ function hittaElevMedToken(ss, token) {
   var data   = elever.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (data[i][2] === token) {
-      return { email: data[i][0], namn: data[i][1], token: data[i][2] };
+      return { email: data[i][0], namn: data[i][1], token: data[i][2], klass: data[i][3] || "" };
     }
   }
   return null;
@@ -144,8 +144,23 @@ function hamtaElevResultat(ss, email) {
   return Object.keys(basta).map(function (k) { return basta[k]; });
 }
 
-// Returnerar aggregerad data för hela klassen (används av klassöversikts-webbappen)
-function hamtaKlassData(ss) {
+// Returnerar alla unika klasser från Elever-sheetet
+function hamtaKlasser(ss) {
+  var elever = ss.getSheetByName("Elever");
+  if (!elever) return [];
+  var data = elever.getDataRange().getValues();
+  var klasser = {};
+  for (var i = 1; i < data.length; i++) {
+    var k = data[i][3] ? data[i][3].toString().trim() : "";
+    if (k) klasser[k] = true;
+  }
+  return Object.keys(klasser).sort();
+}
+
+// Returnerar aggregerad data för en klass (klassFilter = klassnamn, eller "" för alla)
+function hamtaKlassData(ss, klassFilter) {
+  klassFilter = klassFilter ? klassFilter.toString().trim() : "";
+
   var reg     = ss.getSheetByName("Testregister");
   var regData = reg ? reg.getDataRange().getValues() : [];
   var testOrdning = [];
@@ -178,36 +193,63 @@ function hamtaKlassData(ss) {
   for (var i = 1; i < elever.length; i++) {
     var email = elever[i][0] ? elever[i][0].toString().toLowerCase().trim() : "";
     var namn  = elever[i][1] ? elever[i][1].toString() : "";
+    var klass = elever[i][3] ? elever[i][3].toString().trim() : "";
     if (!email || !namn) continue;
+    if (klassFilter && klass !== klassFilter) continue;
 
     var elevData = basta[email] || {};
     var testResultat = {};
+    var testerLista  = [];
     var sum = 0, count = 0;
 
+    // Bygg unika områden och medelpoäng per område
+    var omradeSumma = {}, omradeAntal = {};
     for (var t = 0; t < testOrdning.length; t++) {
       var tid = testOrdning[t];
+      var om  = testOmrade[tid] || tid;
       var v   = elevData[tid] !== undefined ? elevData[tid] : null;
       testResultat[tid] = v;
-      if (v !== null) { sum += v; count++; }
+      testerLista.push({ testId: tid, omrade: om, procent: v });
+      if (v !== null) {
+        sum += v; count++;
+        if (!omradeSumma[om]) { omradeSumma[om] = 0; omradeAntal[om] = 0; }
+        omradeSumma[om] += v; omradeAntal[om]++;
+      }
+    }
+
+    var omradeMedel = {};
+    for (var om in omradeSumma) {
+      omradeMedel[om] = Math.round(omradeSumma[om] / omradeAntal[om]);
     }
 
     studenter.push({
       namn:         namn,
+      klass:        klass,
       testResultat: testResultat,
+      tester:       testerLista,
+      omradeMedel:  omradeMedel,
       totalt:       count > 0 ? Math.round(sum / count) : null
     });
   }
 
-  // Klassmedel per test
-  var klassStats = {};
+  // Unika områden i ordning
+  var omraden = [];
+  var omradenSett = {};
   for (var t = 0; t < testOrdning.length; t++) {
-    var tid = testOrdning[t];
+    var om = testOmrade[testOrdning[t]] || testOrdning[t];
+    if (!omradenSett[om]) { omradenSett[om] = true; omraden.push(om); }
+  }
+
+  // Klassmedel per område
+  var klassStats = {};
+  for (var o = 0; o < omraden.length; o++) {
+    var om = omraden[o];
     var s = 0, c = 0;
     for (var j = 0; j < studenter.length; j++) {
-      var v = studenter[j].testResultat[tid];
-      if (v !== null) { s += v; c++; }
+      var v = studenter[j].omradeMedel[om];
+      if (v !== undefined) { s += v; c++; }
     }
-    klassStats[tid] = c > 0 ? Math.round(s / c) : null;
+    klassStats[om] = c > 0 ? Math.round(s / c) : null;
   }
 
   var ktSum = 0, ktCount = 0;
@@ -216,7 +258,9 @@ function hamtaKlassData(ss) {
   }
 
   return {
-    tester:     testOrdning,
+    klass:      klassFilter || "Alla klasser",
+    klasser:    hamtaKlasser(ss),
+    omraden:    omraden,
     testOmrade: testOmrade,
     studenter:  studenter,
     klassStats: klassStats,
@@ -333,17 +377,18 @@ function uppdateraKlassoversikt(ss) {
     }
   }
 
-  // Rubrikrad: Namn | Självtest 1 | Självtest 2 | … | Medel
-  var rubrik = ["Namn"].concat(testOrdning).concat(["Medel"]);
+  // Rubrikrad: Namn | Klass | Självtest 1 | Självtest 2 | … | Medel
+  var rubrik = ["Namn", "Klass"].concat(testOrdning).concat(["Medel"]);
   var rader  = [rubrik];
 
   for (var i = 1; i < elever.length; i++) {
     var email = elever[i][0] ? elever[i][0].toString().toLowerCase().trim() : "";
     var namn  = elever[i][1] ? elever[i][1].toString() : "";
+    var klass = elever[i][3] ? elever[i][3].toString().trim() : "";
     if (!email || !namn) continue;
 
     var elevData = basta[email] || {};
-    var rad = [namn];
+    var rad = [namn, klass];
     var sum = 0, count = 0;
 
     for (var t = 0; t < testOrdning.length; t++) {
@@ -364,9 +409,9 @@ function uppdateraKlassoversikt(ss) {
   oversikt.getRange(1, 1, 1, rubrik.length).setFontWeight("bold");
   oversikt.getRange(1, rubrik.length, rader.length, 1).setFontWeight("bold");
 
-  // Färgkodning av celler med procentvärden
+  // Färgkodning av celler med procentvärden (börjar på kolumn 3 = första testet)
   for (var r = 2; r <= rader.length; r++) {
-    for (var c = 2; c <= rubrik.length; c++) {
+    for (var c = 3; c <= rubrik.length; c++) {
       var v = rader[r - 1][c - 1];
       if (v === "" || isNaN(v)) continue;
       oversikt.getRange(r, c).setBackground(beraknaFarg(v));
