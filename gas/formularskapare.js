@@ -131,7 +131,7 @@ function skapaFormular() {
     // Vi uppdaterar Testregister efter en kort paus så att svarsfliken hinner skapas.
     uppdateraTestregister(ss, testId, info.omrade, facitNamn, form.getId());
 
-    skapade.push(testId + " (" + info.fragor.length + " frågor)");
+    skapade.push({ testId: testId, omrade: info.omrade, antal: info.fragor.length, lank: form.getPublishedUrl() });
   }
 
   // ── Uppdatera svarssheet-kolumnen i Testregister ───────────────────────────
@@ -139,9 +139,31 @@ function skapaFormular() {
   Utilities.sleep(3000);
   uppdateraSvarssheets(ss);
 
-  var meddelande = "Skapade " + skapade.length + " formulär:\n\n" + skapade.join("\n") +
-    "\n\nKontrollera Testregister-fliken och fyll i kolumn D (Svarssheet) om den är tom.";
+  // ── Skriv alla formulärlänkar till fliken "Formulärlänkar" ────────────────
+  sparaFormularlankar(ss, skapade);
+
+  var meddelande = "Skapade " + skapade.length + " formulär.\n\nAlla länkar finns i fliken \"Formulärlänkar\".";
   SpreadsheetApp.getUi().alert(meddelande);
+}
+
+// ── Hjälp: spara formulärlänkar i egen flik ───────────────────────────────────
+function sparaFormularlankar(ss, skapade) {
+  var flikNamn = "Formulärlänkar";
+  var flik = ss.getSheetByName(flikNamn);
+  if (!flik) flik = ss.insertSheet(flikNamn);
+  flik.clearContents();
+
+  flik.getRange(1, 1, 1, 4).setValues([["TestID", "Område", "Antal frågor", "Formulärlänk"]]);
+  flik.getRange(1, 1, 1, 4).setFontWeight("bold");
+
+  for (var i = 0; i < skapade.length; i++) {
+    var r = skapade[i];
+    flik.appendRow([r.testId, r.omrade, r.antal, r.lank]);
+  }
+
+  // Gör länkkolumnen klickbar
+  var lankRange = flik.getRange(2, 4, skapade.length, 1);
+  lankRange.setFontColor("#1155CC");
 }
 
 // ── Hjälp: uppdatera Testregister (kolumn A–C) ────────────────────────────────
