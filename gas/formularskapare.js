@@ -86,6 +86,7 @@ function skapaFormular() {
     var form      = FormApp.create(formTitel);
     form.setTitle(formTitel);
     form.setDescription("Historia Hi1B");
+    form.setRequireLogin(true);
     form.setCollectEmail(true);
     form.setLimitOneResponsePerUser(false);
     form.setShowLinkToRespondAgain(true);
