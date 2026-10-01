@@ -115,20 +115,6 @@
 </head>
 <body>
 
-<?
-  // Gruppera formulär per område
-  var perOmrade = {};
-  var omradenOrdning = [];
-  for (var i = 0; i < formularer.length; i++) {
-    var f = formularer[i];
-    if (!perOmrade[f.omrade]) {
-      perOmrade[f.omrade] = [];
-      omradenOrdning.push(f.omrade);
-    }
-    perOmrade[f.omrade].push(f);
-  }
-?>
-
 <div class="header">
   <div>
     <div class="header-label">Historia · Hi1B</div>
@@ -137,26 +123,18 @@
   <div class="header-meta"><?= formularer.length ?> formulär</div>
 </div>
 
-<? for (var o = 0; o < omradenOrdning.length; o++) {
-  var om = omradenOrdning[o];
-  var lista = perOmrade[om];
-?>
-<div class="omrade-grupp">
-  <div class="omrade-rubrik"><?= om ?></div>
-  <div class="kort-grid">
-    <? for (var i = 0; i < lista.length; i++) {
-      var f = lista[i];
-    ?>
-    <a class="kort" href="<?= f.lank ?>" target="_blank" rel="noopener">
-      <div class="kort-id"><?= f.testId ?></div>
-      <div class="kort-titel"><?= f.omrade ?></div>
-      <div class="kort-meta"><?= f.antal ?> frågor</div>
-      <div class="kort-pil">→</div>
-    </a>
-    <? } ?>
-  </div>
+<div class="kort-grid">
+  <? for (var i = 0; i < formularer.length; i++) {
+    var f = formularer[i];
+  ?>
+  <a class="kort" href="<?= f.lank ?>" target="_blank" rel="noopener">
+    <div class="kort-id"><?= f.testId ?></div>
+    <div class="kort-titel"><?= f.omrade ?></div>
+    <div class="kort-meta"><?= f.antal ?> frågor</div>
+    <div class="kort-pil">→</div>
+  </a>
+  <? } ?>
 </div>
-<? } ?>
 
 </body>
 </html>
